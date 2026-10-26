@@ -12,6 +12,18 @@ import datetime
 import traceback
 import urllib.request
 
+try:
+    from zoneinfo import ZoneInfo
+    _SH = ZoneInfo("Asia/Shanghai")
+except Exception:            # 极老的 Python 没有 zoneinfo
+    _SH = None
+
+
+def now_sh():
+    """统一用北京时间，避免在 UTC 机器（GitHub Actions）上时间显示成 16:31。"""
+    return datetime.datetime.now(_SH) if _SH else datetime.datetime.now()
+
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(BASE, "scripts"))
 import build as TB  # 课表解析（含 xlsread）
@@ -601,8 +613,8 @@ def compose(days):
 
 # ------------------------------------------------------------------ 主流程
 def main():
-    today = datetime.date.today()
-    gen_at = datetime.datetime.now().strftime("%m-%d %H:%M")
+    today = now_sh().date()
+    gen_at = now_sh().strftime("%m-%d %H:%M")
     page = fetch()
     notice = parse_notice(page)
     days = []
@@ -613,7 +625,7 @@ def main():
     out = compose(days)
     with open(os.path.join(BASE, "index.html"), "w", encoding="utf-8") as f:
         f.write(out)
-    msg = (f'{datetime.datetime.now():%Y-%m-%d %H:%M:%S} 生成 {len(days)} 天 '
+    msg = (f'{now_sh():%Y-%m-%d %H:%M:%S} 生成 {len(days)} 天 '
            f'(公告覆盖={"/".join(sorted(notice["days"])) or "无"} 更新={gen_at})')
     with open(os.path.join(BASE, "更新日志.txt"), "a", encoding="utf-8") as f:
         f.write(msg + "\n")
@@ -625,5 +637,5 @@ if __name__ == "__main__":
         main()
     except Exception:
         with open(os.path.join(BASE, "更新日志.txt"), "a", encoding="utf-8") as f:
-            f.write(f'{datetime.datetime.now():%Y-%m-%d %H:%M:%S} 失败\n{traceback.format_exc()}\n')
+            f.write(f'{now_sh():%Y-%m-%d %H:%M:%S} 失败\n{traceback.format_exc()}\n')
         raise SystemExit(1)
