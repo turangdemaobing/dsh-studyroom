@@ -15,3 +15,5 @@
 
 数据来源：海南大学后勤保障部 · 服务指南 · 自习室预告
 <https://he.hainanu.edu.cn/baozhang/info/1033/15003.htm>
+
+<!-- trigger 2026-10-27 -->
