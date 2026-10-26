@@ -1,0 +1,49 @@
+name: 每日更新自习室
+
+on:
+  schedule:
+    # UTC 15:00 = 北京 23:00
+    - cron: "0 15 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 关键探针：GitHub 的机器在境外，先确认能访问海大站点
+      - name: 探测学校站点可达性
+        run: |
+          python - <<'EOF'
+          import urllib.request, sys
+          url = "https://he.hainanu.edu.cn/baozhang/info/1033/15003.htm"
+          try:
+              r = urllib.request.urlopen(url, timeout=25)
+              print("HTTP", r.status, "bytes", len(r.read()))
+          except Exception as e:
+              print("探针失败:", e)
+              sys.exit(1)
+          EOF
+
+      - name: 生成页面
+        run: python updater.py
+
+      - name: 提交并推送
+        run: |
+          git config user.name  "studyroom-bot"
+          git config user.email "studyroom-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "更新 $(TZ=Asia/Shanghai date +%F\ %H:%M)" || echo "没有变化"
+          git push

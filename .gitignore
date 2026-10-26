@@ -1,0 +1,10 @@
+# 个人课表原件（含学号/姓名），不公开
+*.xls
+*.xlsx
+
+# 临时产物
+__pycache__/
+*.pyc
+probe.html
+frame*.html
+t*.html
