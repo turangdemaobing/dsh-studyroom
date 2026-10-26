@@ -5,6 +5,9 @@ on:
     # UTC 15:00 = 北京 23:00
     - cron: "0 15 * * *"
   workflow_dispatch: {}
+  # 手动 push 也会跑一次：方便验证，也顺便在更新后立即重算
+  push:
+    branches: [main]
 
 permissions:
   contents: write
@@ -45,5 +48,5 @@ jobs:
           git config user.name  "studyroom-bot"
           git config user.email "studyroom-bot@users.noreply.github.com"
           git add -A
-          git commit -m "更新 $(TZ=Asia/Shanghai date +%F\ %H:%M)" || echo "没有变化"
+          git commit -m "更新 $(TZ=Asia/Shanghai date +%F\ %H:%M) [skip ci]" || echo "没有变化"
           git push
